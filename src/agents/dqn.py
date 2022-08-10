@@ -9,9 +9,12 @@ from .base import RLBaseAgent
 #TODO: check the default values against those in the literature
 
 class DQNAgent(RLBaseAgent):
-    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
+    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, noisy_nets=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
         super().__init__(**kwargs)
         network_name = 'dueling' if dueling else 'dqn'
+        if noisy_nets:
+            network_name += '_noisy'
+        self.noisy_nets = noisy_nets
         self.online_network = get_network(network_name)
         self.use_target = True if double else use_target
         if self.use_target:
@@ -81,6 +84,11 @@ class DQNAgent(RLBaseAgent):
 
                 if  self.use_target and self.current_frame_num % self.update_taraget_after == 0:
                     self.set_target_weights()
+                
+                if self.noisy_nets:
+                    self.online_network.reset_noise()
+                    if self.use_target:
+                        self.target_network.reset_noise()
                 print('Training frame')
             else:
                 print('Warmup frame')
@@ -97,7 +105,10 @@ class DQNAgent(RLBaseAgent):
     def execute_one_action(self, state):
         state = np.array(state).squeeze()
         q_values = self.online_network.predict(state[np.newaxis, :], verbose=0)
-        action = self.exploration_policy.select_action(q_values[0], step=self.current_frame_num)
+        if self.noisy_nets:
+            action = np.argmax(q_values)
+        else:
+            action = self.exploration_policy.select_action(q_values[0], step=self.current_frame_num)
         next_state, reward, done, info = self.env.step(action)
         self.replay_buffer.append(state, action, reward, np.array(next_state).squeeze(), done)
         self.current_frame_num += 1
