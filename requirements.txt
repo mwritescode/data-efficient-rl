@@ -1,0 +1,7 @@
+numpy
+pandas
+yacs
+wandb
+gym[atari]
+autorom[accept-rom-license]
+pygame
