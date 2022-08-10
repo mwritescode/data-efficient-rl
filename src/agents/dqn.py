@@ -9,12 +9,13 @@ from .base import RLBaseAgent
 #TODO: check the default values against those in the literature
 
 class DQNAgent(RLBaseAgent):
-    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
+    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
         super().__init__(**kwargs)
-        self.online_network = get_network()
+        network_name = 'dueling' if dueling else 'dqn'
+        self.online_network = get_network(network_name)
         self.use_target = True if double else use_target
         if self.use_target:
-            self.target_network = get_network()
+            self.target_network = get_network(network_name)
             self.set_target_weights()
             self.update_taraget_after = update_target_after
         self.prioritized_replay = prioritized_replay
