@@ -4,7 +4,7 @@ from ..utils.exploration import EpsGreedy
 # TODO: maybe re-name evaluation_step in run_eval_episode and train_step in run_train_episode (?)
  
 class RLBaseAgent(ABC):
-    def __init__(self, evaluate_after=0, eps_start=1.0, eps_end=0.1, eps_eval=0.05, max_train_frames=1000000, max_episode_frames=108000, warmup_frames=1600, batch_size=32, annealing_steps=50000):
+    def __init__(self, evaluate_after=0, eps_start=1.0, eps_end=0.1, eps_eval=0.05, max_train_frames=1000000, max_episode_frames=108000, warmup_frames=1600, batch_size=32, annealing_steps=5000):
         super().__init__()
         self.current_frame_num = 0
         self.current_eval_frame_num = 0

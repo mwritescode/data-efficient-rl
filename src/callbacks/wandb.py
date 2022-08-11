@@ -35,10 +35,11 @@ class WandbCallback(RLCallback):
         )
     
     def on_train_episode_end(self, logs=None):
-        episode = logs['episode']
-        logs_to_wandb = {key: value for key, value in logs.items() if key != 'episode' and value is not None}
-        for score_name, score_value in logs_to_wandb.items():
-            wandb.log({score_name: score_value, 'episode': episode}, step=episode)
+        if not logs['is_warmup']:
+            episode = logs['episode']
+            logs_to_wandb = {key: value for key, value in logs.items() if key != 'episode' and value is not None}
+            for score_name, score_value in logs_to_wandb.items():
+                wandb.log({score_name: score_value, 'episode': episode}, step=episode)
         return logs
 
     def on_eval_end(self, logs=None):

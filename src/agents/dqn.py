@@ -4,12 +4,13 @@ from copy import deepcopy
 from tensorflow import keras
 from ..utils.nets import get_network
 from ..utils.buffer import ReplayBuffer, PrioritizedReplayBuffer
+from ..utils.augment import augment_batch
 from .base import RLBaseAgent
 
 #TODO: check the default values against those in the literature
 
 class DQNAgent(RLBaseAgent):
-    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, noisy_nets=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
+    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, noisy_nets=False, augment=False, use_target=False, update_target_after=10000, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
         super().__init__(**kwargs)
         network_name = 'dueling' if dueling else 'dqn'
         if noisy_nets:
@@ -27,13 +28,19 @@ class DQNAgent(RLBaseAgent):
         self.clip_rewards = clip_rewards
         self.double = double
         self.beta = beta
+        self.augment = augment
         self.beta_decay = (1.0 - beta) / self.max_train_frames
     
     def set_target_weights(self):
         self.target_network.set_weights(deepcopy(self.online_network.get_weights()))
 
     def train_step(self, init_state, episode_num):
-        logs = {'train_loss': None, 'train_episode_return': 0.0, 'episode': episode_num, 'episode_length': 1}
+        logs = {
+            'train_loss': 0.0, 
+            'train_episode_return': 0.0, 
+            'episode': episode_num, 
+            'episode_length': 0, 
+            'is_warmup': self.current_frame_num < self.warmup_frames}
         state = init_state
         while logs['episode_length'] < self.max_episode_frames:
             next_state, reward, done, _ = self.execute_one_action(state)
@@ -45,6 +52,10 @@ class DQNAgent(RLBaseAgent):
                 # 1. Sample batch experiences
                 idxs, infos, weights = self.replay_buffer.sample(batch_size=self.batch_size, beta=self.beta)
                 states, actions, rewards, next_states, dones = infos
+
+                if self.augment:
+                    states = augment_batch(states)
+
                 if self.prioritized_replay:
                     self.beta += self.beta_decay
 
@@ -80,7 +91,7 @@ class DQNAgent(RLBaseAgent):
                 self.optimizer.apply_gradients(zip(grads, trainable_vars))
                 if self.prioritized_replay:
                     self.replay_buffer.update_priorities(idxs, new_priorities=elementwise_loss.numpy())
-                logs['train_loss'] = logs['train_loss'] + loss.numpy() if logs['train_loss'] else loss.numpy()
+                logs['train_loss'] += loss.numpy()
 
                 if  self.use_target and self.current_frame_num % self.update_taraget_after == 0:
                     self.set_target_weights()
@@ -94,8 +105,7 @@ class DQNAgent(RLBaseAgent):
                 print('Warmup frame')
             state = next_state
 
-        if logs['train_loss']:
-            logs['train_loss'] /= logs['episode_length']
+        logs['train_loss'] /= logs['episode_length']
         return logs
 
         
