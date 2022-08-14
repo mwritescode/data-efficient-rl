@@ -6,3 +6,5 @@ gym[atari]
 autorom[accept-rom-license]
 pygame
 tensorflow-addons
+moviepy
+ffmpeg-python
