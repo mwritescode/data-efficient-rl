@@ -100,8 +100,16 @@ class RLBaseAgent(ABC):
                 self.current_frame_num > self.warmup_frames:
                 for callback in callbacks:
                     callback.on_eval_begin()
+                
+                # Even if the episode was not finished, log the metrics and start a new one
+                if not done:
+                    for callback in callbacks:
+                        callback.on_train_episode_end({**logs, **additional_logs})
+                    additional_logs['episode_num'] += 1
+                    additional_logs['episode_len'] = 0
+                    additional_logs['episode_return'] = 0.0
+                    state = self.env.reset()    
 
-                state = self.env.reset()
                 episode_returns = []
                 for ep_num in tqdm.tqdm(range(self.n_eval_episodes)):
                     ep_return, _ = self.evaluation_episode(state, is_recording=ep_num==1 and self.record_video)
