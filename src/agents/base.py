@@ -1,10 +1,25 @@
 import tqdm
 import numpy as np
+import tensorflow as tf
 from abc import ABC, abstractmethod
 from ..utils.exploration import EpsGreedy
  
 class RLBaseAgent(ABC):
-    def __init__(self, record_video=False, log_table=False, log_table_period=100, evaluate_after=300, evaluation_episodes=5, eps_start=1.0, eps_end=0.1, eps_eval=0.05, max_train_frames=1000000, max_episode_frames=108000, warmup_frames=1600, batch_size=32, annealing_steps=50000):
+    def __init__(
+        self, 
+        record_video=False, 
+        log_table=False, 
+        log_table_period=100, 
+        evaluate_after=1000, 
+        evaluation_episodes=5, 
+        eps_start=1.0, 
+        eps_end=0.1, 
+        eps_eval=0.05, 
+        max_train_frames=100000, 
+        max_episode_frames=108000, 
+        warmup_frames=1600, 
+        batch_size=32, 
+        annealing_steps=50000):
         super().__init__()
         self.current_frame_num = 0
         self.eval_period = evaluate_after
@@ -47,6 +62,9 @@ class RLBaseAgent(ABC):
     def fit(self, seed=None, callbacks=[]):
         for callback in callbacks:
             callback.on_train_begin()
+
+        tf.keras.utils.set_random_seed(seed)
+
         additional_logs = {'episode_num': 0, 'episode_len': 0, 'episode_return': 0.0}
         state = self.env.reset(seed=seed)
         # Repeat until max_frames is reached
@@ -111,12 +129,15 @@ class RLBaseAgent(ABC):
             'num_episodes': []
         }
         for seed in tqdm.tqdm(seeds):
-            episode_num = 1
-            frame_n = 0
-            episode_returns = []
+            episode_num, frame_n, episode_returns = 0, 0, []
+
+            #Setting the random seed
+            tf.keras.utils.set_random_seed(seed)
             state = self.env.reset(seed=seed)
+
+            # Running the evaluation for one seed
             while frame_n < frames:
-                episode_return, frame_n = self.evaluation_episode(state, max_frames=frames, current_frame=frames)
+                episode_return, frame_n = self.evaluation_episode(state, max_frames=frames, current_frame=frame_n)
                 episode_num += 1
                 episode_returns.append(episode_return)
                 state = self.env.reset()
@@ -128,8 +149,6 @@ class RLBaseAgent(ABC):
         
         for callback in callbacks:
             callback.on_eval_end(logs)
-        
-  
     
     def compile(self, environment, optimizer, loss):
         self.env = environment

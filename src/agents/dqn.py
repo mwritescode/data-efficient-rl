@@ -2,7 +2,6 @@ import os
 import numpy as np
 import tensorflow as tf
 from copy import deepcopy
-from tensorflow import keras
 import moviepy.editor as mpy
 from ..utils.nets import get_network
 from ..utils.buffer import ReplayBuffer, PrioritizedReplayBuffer
@@ -12,7 +11,21 @@ from .base import RLBaseAgent
 #TODO: check the default values against those in the literature
 
 class DQNAgent(RLBaseAgent):
-    def __init__(self, buffer_size=100000, double=False, prioritized_replay=False, dueling=False, noisy_nets=False, augment=False, use_target=False, update_target_after=10000, tau=None, discount_factor=0.99, clip_rewards=True, beta=0.4, **kwargs):
+    def __init__(
+        self, 
+        buffer_size=100000, 
+        double=False, 
+        prioritized_replay=False, 
+        dueling=False, 
+        noisy_nets=False, 
+        augment=False, 
+        use_target=False, 
+        update_target_after=10000, 
+        tau=None, 
+        discount_factor=0.99, 
+        clip_rewards=True, 
+        beta=0.4, 
+        **kwargs):
         super().__init__(**kwargs)
         network_name = 'dueling' if dueling else 'dqn'
         if noisy_nets:
@@ -35,10 +48,18 @@ class DQNAgent(RLBaseAgent):
         self.beta_decay = (1.0 - beta) / self.max_train_frames
     
     def load_checkpoint(self, checkpoint_path):
-        return super().load_checkpoint(checkpoint_path)
+        checkpoint_path = os.path.normpath(checkpoint_path)
+
+        # Load online network weights
+        self.online_network.load_weights(checkpoint_path)        
 
     def save_checkpoint(self, checkpoint_path):
-        return super().save_checkpoint(checkpoint_path)
+        checkpoint_path = os.path.normpath(checkpoint_path)
+        folder_name = os.path.dirname(checkpoint_path)
+        os.makedirs(folder_name, exist_ok=True)
+
+        # Save online network weights
+        self.online_network.save_weights(checkpoint_path)
     
     def set_target_weights(self):
         online_net_weights = deepcopy(self.online_network.get_weights())
@@ -110,9 +131,9 @@ class DQNAgent(RLBaseAgent):
         # 2. Estimate target Q-values
         if not self.double:
             if self.use_target:
-                next_q_values = self.target_network(next_states)
+                next_q_values = tf.cast(self.target_network(next_states), tf.float64)
             else:
-                next_q_values = self.online_network(next_states)
+                next_q_values = tf.cast(self.online_network(next_states), tf.float64)
             target_q = tf.where(dones, rewards, rewards + self.gamma * tf.reduce_max(next_q_values, axis=1))
         else:
             target_next_q = tf.cast(self.target_network(next_states), tf.float64)
