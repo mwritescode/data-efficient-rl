@@ -1,27 +1,26 @@
 import numpy as np
 import tensorflow as tf
 
-IMG_SIZE = (84,84)
+IMG_SIZE = (4, 84,84)
 
+@tf.function
 def augment_batch(batch):
-    batch = _random_crop(batch)
-    return _random_intensity(batch)
+    batch = tf.pad(batch, paddings=((0,0), (0,0), (1, 1), (1,1)), mode='SYMMETRIC')
+    batch = tf.pad(batch, paddings=((0,0), (0,0), (1, 1), (1,1)), mode='SYMMETRIC')
+    batch = tf.pad(batch, paddings=((0,0), (0,0), (2, 2), (2,2)), mode='SYMMETRIC')
 
-def _random_crop(batch):
-    batch = np.pad(batch, pad_width=((0,0), (0,0), (4,4), (4,4)), mode='edge')
-    # Different random crop for every stakced frame 
-    batch = tf.map_fn(lambda img: tf.map_fn(lambda ch: tf.image.random_crop(ch, IMG_SIZE), img), batch)
+    batch = tf.cast(batch, tf.float32)
 
-    # Same crop for every stacked frame would have been: 
-    # tf.map_fn(lambda img: tf.image.random_crop(img, IMG_SIZE), batch)
+    batch = tf.map_fn(lambda img:  _augment_img(img, scale=tf.convert_to_tensor(0.05)), batch)
     return batch
 
-def _random_intensity(batch, scale=0.05):
-    batch = tf.map_fn(lambda img: tf.map_fn(lambda ch: _adjust_intensity(ch, scale), img), batch)
-    return batch
+def _augment_img(img, scale=0.05):
+    img = tf.image.random_crop(img, IMG_SIZE)
+    img = _adjust_intensity(img=img, scale=scale)
+    return img
 
 def _adjust_intensity(img, scale):
-    r = np.random.normal(loc=0.0, scale=1.0)
-    img = img * (1.0 + scale * np.clip(r, -2, 2))
+    r = tf.random.normal(shape=(1,))
+    img = img * (1.0 + scale * tf.clip_by_value(r, -2.0, 2.0))
     return img
 
