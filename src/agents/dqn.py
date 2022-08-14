@@ -34,6 +34,12 @@ class DQNAgent(RLBaseAgent):
         self.augment = augment
         self.beta_decay = (1.0 - beta) / self.max_train_frames
     
+    def load_checkpoint(self, checkpoint_path):
+        return super().load_checkpoint(checkpoint_path)
+
+    def save_checkpoint(self, checkpoint_path):
+        return super().save_checkpoint(checkpoint_path)
+    
     def set_target_weights(self):
         online_net_weights = deepcopy(self.online_network.get_weights())
         if self.tau is not None:
@@ -55,6 +61,11 @@ class DQNAgent(RLBaseAgent):
             }
 
         # 1. Sample batch experiences
+        if self.noisy_nets:
+            self.online_network.reset_noise()
+            if self.use_target:
+                self.target_network.reset_noise()
+
         idxs, infos, weights = self.replay_buffer.sample(batch_size=self.batch_size, beta=self.beta)
         states, actions, rewards, next_states, dones = infos
 
@@ -91,11 +102,6 @@ class DQNAgent(RLBaseAgent):
         if  self.use_target and self.current_frame_num % self.update_taraget_after == 0:
             self.set_target_weights()
         
-        """if self.noisy_nets:
-            self.online_network.reset_noise()
-            if self.use_target:
-                self.target_network.reset_noise()"""
-
         logs['train_frame'] = self.current_frame_num - self.warmup_frames
         return logs
     
@@ -154,7 +160,9 @@ class DQNAgent(RLBaseAgent):
     def execute_one_action(self, state, train=True):
         state = np.array(state).squeeze()
         q_values = self.online_network.predict(state[np.newaxis, :], verbose=0)
-        if self.noisy_nets:
+        if self.current_frame_num < self.warmup_frames:
+            action = np.random.randint(low=0, high=self.output_dim)
+        elif self.noisy_nets and train: 
             action = np.argmax(q_values)
         else:
             action = self.exploration_policy.select_action(
@@ -164,11 +172,7 @@ class DQNAgent(RLBaseAgent):
         next_state, reward, done, info = self.env.step(action)
         if train:
             self.replay_buffer.append(state, action, reward, np.array(next_state).squeeze(), done)
-        
-        if self.noisy_nets:
-            self.online_network.reset_noise()
-            if self.use_target:
-                self.target_network.reset_noise()
+
         return next_state, reward, done, info
     
 

@@ -4,10 +4,9 @@ from abc import ABC, abstractmethod
 from ..utils.exploration import EpsGreedy
  
 class RLBaseAgent(ABC):
-    def __init__(self, record_video=False, log_table=False, log_table_period=100, evaluate_after=300, evaluation_episodes=5, eps_start=1.0, eps_end=0.1, eps_eval=0.05, max_train_frames=1000000, max_episode_frames=108000, warmup_frames=1000, batch_size=32, annealing_steps=50000):
+    def __init__(self, record_video=False, log_table=False, log_table_period=100, evaluate_after=300, evaluation_episodes=5, eps_start=1.0, eps_end=0.1, eps_eval=0.05, max_train_frames=1000000, max_episode_frames=108000, warmup_frames=1600, batch_size=32, annealing_steps=50000):
         super().__init__()
         self.current_frame_num = 0
-        self.current_eval_frame_num = 0
         self.eval_period = evaluate_after
         self.n_eval_episodes = evaluation_episodes
         self.eps_start = eps_start
@@ -84,9 +83,10 @@ class RLBaseAgent(ABC):
                 for callback in callbacks:
                     callback.on_eval_begin()
 
+                state = self.env.reset()
                 episode_returns = []
                 for ep_num in tqdm.tqdm(range(self.n_eval_episodes)):
-                    ep_return, _ = self.evaluation_episode(state, is_recording=ep_num==1)
+                    ep_return, _ = self.evaluation_episode(state, is_recording=ep_num==1 and self.record_video)
                     state = self.env.reset()
                     episode_returns.append(ep_return)
                 
