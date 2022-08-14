@@ -1,0 +1,53 @@
+AGENT:
+  AUGMENT: false
+  BATCH_SIZE: 32
+  BETA: 0.4
+  BUFFER_SIZE: 100000
+  CLIP_REWARDS: true
+  DISCOUNT_FACTOR: 0.99
+  DOUBLE: true
+  DUELING: false
+  EPS_ANNEALING_STEPS: 50000
+  EPS_END: 0.1
+  EPS_EVAL: 0.05
+  EPS_START: 1.0
+  EVALUATE_AFTER: 5000
+  EVALUATION_EPISODES: 5
+  LOG_TABLE: true
+  LOG_TABLE_PERIOD: 100
+  MAX_EPISODE_FRAMES: 108000
+  MAX_TRAIN_FRAMES: 100000
+  NOISY_NETS: false
+  PRIORITIZED_REPLAY: false
+  RECORD_VIDEO: true
+  TAU: 0.99
+  UPDATE_TAGRET_AFTER: 1
+  USE_TARGET: true
+  WARMUP_FRAMES: 1600
+ENV:
+  PLAY_RANDOMLY: false
+  RENDER_MODE: rgb_array
+  TERMINAL_ON_LIFE_LOSS: false
+EVALUATION:
+  CHECKPOINT_PATH: checkpoints/double/double.ckpt
+  MAX_FRAMES: 125000
+  SEEDS:
+  - 42
+  - 24
+  - 48
+  - 140
+  - 768
+  WANDB:
+    GROUP: double-dqn
+    NAME: eval-1
+    PROJECT: data-efficient-rl
+TRAINING:
+  CHECKPOINT_PATH: checkpoints/double/double.ckpt
+  CLIPNORM: 10.0
+  LEARNING_RATE: 0.0001
+  LOSS: huber
+  SEED: 1
+  WANDB:
+    GROUP: double-dqn
+    NAME: run-1
+    PROJECT: data-efficient-rl
