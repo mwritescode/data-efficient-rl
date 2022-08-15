@@ -60,14 +60,13 @@ class WandbTrainingCallback(RLCallback):
         return logs
 
     def on_train_episode_end(self, logs=None):
-        episode = logs['episode_num']
         logs_to_wandb = {key:value for key, value in logs.items() if 'episode' in key}
-        wandb.log(logs_to_wandb, step=episode)
+        wandb.log(logs_to_wandb)
         return logs
 
     def on_eval_end(self, logs=None):
         logs_to_wandb = {key: value for key, value in logs.items () if key not in ['train_frame', 'log_videos']}
-        wandb.log(logs_to_wandb, step= logs['train_frame'])
+        wandb.log(logs_to_wandb)
         
         if logs['log_videos']:
             all_videos = glob.glob('videos/*.mp4')
