@@ -1,35 +1,36 @@
 AGENT:
-  AUGMENT: false
+  AUGMENT: true
   BATCH_SIZE: 32
   BETA: 0.4
   BUFFER_SIZE: 100000
   CLIP_REWARDS: true
   DISCOUNT_FACTOR: 0.99
-  DOUBLE: false
-  DUELING: false
+  DOUBLE: true
+  DUELING: true
   EPS_ANNEALING_STEPS: 50000
-  EPS_END: 0.1
-  EPS_EVAL: 0.05
+  EPS_END: 0.01
+  EPS_EVAL: 0.001
   EPS_START: 1.0
   EVALUATE_AFTER: 5000
   EVALUATION_EPISODES: 5
   LOG_TABLE: true
   LOG_TABLE_PERIOD: 100
   MAX_EPISODE_FRAMES: 108000
-  MAX_TRAIN_FRAMES: 100000
-  NOISY_NETS: false
-  PRIORITIZED_REPLAY: false
+  MAX_TRAIN_FRAMES: 6000
+  NOISY_NETS: true
+  PRIORITIZED_REPLAY: true
   RECORD_VIDEO: true
   TAU: 0.99
   UPDATE_TAGRET_AFTER: 1
   USE_TARGET: true
-  WARMUP_FRAMES: 1600
+  WARMUP_FRAMES: 20000
+  NUM_UPDATES_PER_STEP: 8
 ENV:
-  PLAY_RANDOMLY: true
   RENDER_MODE: rgb_array
   TERMINAL_ON_LIFE_LOSS: false
+  STICKY_ACTION_PROB: 0.0
 EVALUATION:
-  CHECKPOINT_PATH: checkpoints/random
+  CHECKPOINT_PATH: checkpoints/multi_update/multi_update.ckpt
   MAX_FRAMES: 125000
   SEEDS:
   - 42
@@ -38,16 +39,19 @@ EVALUATION:
   - 140
   - 768
   WANDB:
-    GROUP: random-agent
-    NAME: run-1
+    GROUP: multi-update
+    NAME: eval-
     PROJECT: data-efficient-rl
 TRAINING:
-  CHECKPOINT_PATH: checkpoints/random
+  CHECKPOINT_PATH: checkpoints/multi_update/multi_update.ckpt
   CLIPNORM: 10.0
-  LEARNING_RATE: 0.0001
+  LEARNING_RATE: 0.0000625
   LOSS: huber
-  SEED: 1
+  SEEDS:
+  - 1
+  - 2
+  - 3
   WANDB:
-    GROUP: random-agent
-    NAME: eval-1
+    GROUP: multi-update
+    NAME: run-
     PROJECT: data-efficient-rl
