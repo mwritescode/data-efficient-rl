@@ -24,6 +24,7 @@ def run_training(cfg):
     tf.keras.backend.set_image_data_format('channels_first')
 
     agent = DQNAgent(
+        name=cfg.TRAINING.WANDB.GROUP,
         use_target=cfg.AGENT.USE_TARGET,
         update_target_after=cfg.AGENT.UPDATE_TAGRET_AFTER,
         tau=cfg.AGENT.TAU,
@@ -48,7 +49,8 @@ def run_training(cfg):
         max_train_frames=cfg.AGENT.MAX_TRAIN_FRAMES,
         max_episode_frames=cfg.AGENT.MAX_EPISODE_FRAMES,
         warmup_frames=cfg.AGENT.WARMUP_FRAMES,
-        batch_size=cfg.AGENT.BATCH_SIZE)
+        batch_size=cfg.AGENT.BATCH_SIZE,
+        num_updates_per_step=cfg.AGENT.NUM_UPDATES_PER_STEP)
     agent.online_network.summary()
 
     loss_fn = keras.losses.Huber if cfg.TRAINING.LOSS == 'huber' else keras.losses.MeanSquaredError

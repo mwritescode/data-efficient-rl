@@ -13,6 +13,7 @@ from .base import RLBaseAgent
 class DQNAgent(RLBaseAgent):
     def __init__(
         self, 
+        name,
         buffer_size=100000, 
         double=False, 
         prioritized_replay=False, 
@@ -30,6 +31,7 @@ class DQNAgent(RLBaseAgent):
         network_name = 'dueling' if dueling else 'dqn'
         if noisy_nets:
             network_name += '_noisy'
+        self.name = name
         self.noisy_nets = noisy_nets
         self.online_network = get_network(network_name)
         self.use_target = True if double else use_target
@@ -95,7 +97,7 @@ class DQNAgent(RLBaseAgent):
             states = augment_batch(states)
             next_states = augment_batch(next_states)
             if self.log_table and \
-                (self.current_frame_num - self.warmup_frames) % self.log_table_period == 0:
+                (self.current_frame_num -  self.warmup_frames) % self.log_table_period == 0:
                 logs['table']['augmented_frames'] = states.numpy()[:5,:]
                 logs['table']['non_augmented_frames'] = old_states[:5,:]
 
@@ -174,7 +176,7 @@ class DQNAgent(RLBaseAgent):
 
         if is_recording:
             episode_vid = mpy.ImageSequenceClip(frames, fps=24)
-            episode_vid.write_videofile(f"videos/current_ep_{self.current_frame_num - 1 - self.warmup_frames}.mp4", logger=None)
+            episode_vid.write_videofile(f"videos/current_ep_{self.name}.mp4", logger=None)
             
         return episode_return, current_frame
 
@@ -188,7 +190,7 @@ class DQNAgent(RLBaseAgent):
         else:
             action = self.exploration_policy.select_action(
                 q_values[0], 
-                step=self.current_frame_num - 1 - self.warmup_frames, 
+                step=self.current_frame_num - self.warmup_frames, 
                 train=train)
         next_state, reward, done, info = self.env.step(action)
         if train:

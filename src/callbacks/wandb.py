@@ -38,6 +38,7 @@ class WandbTrainingCallback(RLCallback):
             reinit=True,
             config=config
         )
+        self.vid_name = group
     
     def on_train_step_end(self, logs=None):
         frame = logs['train_frame']
@@ -69,7 +70,7 @@ class WandbTrainingCallback(RLCallback):
         wandb.log(logs_to_wandb)
         
         if logs['log_videos']:
-            all_videos = glob.glob(f'videos/current_ep_{logs["train_frame"]}.mp4')
+            all_videos = glob.glob(f'videos/current_ep_{self.vid_name}.mp4')
             wandb.log({"gameplays": wandb.Video(
                 all_videos[0], 
                 caption=f'evaluation episode after {logs["train_frame"]} training frames', 
