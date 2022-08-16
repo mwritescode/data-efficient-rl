@@ -69,7 +69,7 @@ class WandbTrainingCallback(RLCallback):
         wandb.log(logs_to_wandb)
         
         if logs['log_videos']:
-            all_videos = glob.glob('videos/*.mp4')
+            all_videos = glob.glob(f'videos/current_ep_{logs["train_frame"]}.mp4')
             wandb.log({"gameplays": wandb.Video(
                 all_videos[0], 
                 caption=f'evaluation episode after {logs["train_frame"]} training frames', 

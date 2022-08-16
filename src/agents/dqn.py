@@ -174,7 +174,7 @@ class DQNAgent(RLBaseAgent):
 
         if is_recording:
             episode_vid = mpy.ImageSequenceClip(frames, fps=24)
-            episode_vid.write_videofile("videos/current_ep.mp4", logger=None)
+            episode_vid.write_videofile(f"videos/current_ep_{self.current_frame_num - 1 - self.warmup_frames}.mp4", logger=None)
             
         return episode_return, current_frame
 
@@ -188,7 +188,7 @@ class DQNAgent(RLBaseAgent):
         else:
             action = self.exploration_policy.select_action(
                 q_values[0], 
-                step=self.current_frame_num - self.warmup_frames, 
+                step=self.current_frame_num - 1 - self.warmup_frames, 
                 train=train)
         next_state, reward, done, info = self.env.step(action)
         if train:

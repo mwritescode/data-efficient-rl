@@ -19,7 +19,8 @@ class RLBaseAgent(ABC):
         max_episode_frames=108000, 
         warmup_frames=1600, 
         batch_size=32, 
-        annealing_steps=50000):
+        annealing_steps=50000,
+        num_updates_per_step=1):
         super().__init__()
         self.current_frame_num = 0
         self.eval_period = evaluate_after
@@ -36,6 +37,7 @@ class RLBaseAgent(ABC):
         self.record_video = record_video
         self.log_table = log_table
         self.log_table_period = log_table_period
+        self.num_updates_per_step = num_updates_per_step
     
     @abstractmethod
     def train_step(self, max_frames):
@@ -76,14 +78,15 @@ class RLBaseAgent(ABC):
 
             # If warmup is done train for one step
             if self.current_frame_num > self.warmup_frames:
-                logs = self.train_step()
+                for _ in range(self.num_updates_per_step):
+                    logs = self.train_step()
+                    for callback in callbacks:
+                        callback.on_train_step_end(logs)
 
                 if self.log_table and \
                     (self.current_frame_num - self.warmup_frames) % self.log_table_period == 0:
                     logs['table']['actual_frame'] = info['rgb']
                     logs['table']['seen_frame'] = np.array(state)[-1]
-                for callback in callbacks:
-                    callback.on_train_step_end(logs)
 
             if done or additional_logs['episode_len'] > self.max_episode_frames:
                 if self.current_frame_num > self.warmup_frames:
