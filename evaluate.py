@@ -90,4 +90,4 @@ if __name__ == '__main__':
         new_cfg['TRAINING']['CHECKPOINT_PATH'] = new_cfg['TRAINING']['CHECKPOINT_PATH'].replace(old_name, new_name)
         new_cfg['EVALUATION']['EVALUATION_PATH'] = new_cfg['TRAINING']['CHECKPOINT_PATH'].replace(old_name, new_name)
         new_cfg['EVALUATION']['WANDB']['NAME'] += str(seed)
-        run_evaluation(cfg)
+        run_evaluation(new_cfg)
