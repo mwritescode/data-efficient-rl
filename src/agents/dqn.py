@@ -183,7 +183,7 @@ class DQNAgent(RLBaseAgent):
     def execute_one_action(self, state, train=True):
         state = np.array(state).squeeze()
         q_values = self.online_network.predict(state[np.newaxis, :], verbose=0)
-        if self.current_frame_num < self.warmup_frames:
+        if self.current_frame_num < self.warmup_frames and train:
             action = np.random.randint(low=0, high=self.output_dim)
         elif self.noisy_nets and train: 
             action = np.argmax(q_values)
