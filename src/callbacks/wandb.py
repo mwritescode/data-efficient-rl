@@ -93,9 +93,11 @@ class WandbEvaluationCallback(RLCallback):
             config=config
         )
     
+    def on_eval_episode_end(self, logs=None):
+        wandb.log(logs)
+        return logs
+    
     def on_eval_end(self, logs=None):
-        table = wandb.Table(dataframe=pd.DataFrame(logs))
-        self.run.log({'Results Table': table})
         self.run.finish()
         return logs
 

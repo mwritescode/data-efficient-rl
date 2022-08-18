@@ -1,0 +1,28 @@
+AGENT:
+  PLAY_RANDOMLY: true
+ENV:
+  RENDER_MODE: rgb_array
+  TERMINAL_ON_LIFE_LOSS: false
+  STICKY_ACTION_PROB: 0.0
+EVALUATION:
+  MAX_FRAMES: 125000
+  SEEDS:
+  - 10
+  - 12
+  - 18
+  - 8
+  - 4
+  - 42
+  - 24
+  - 48
+  - 140
+  - 768
+  - 1024
+  - 220
+  - 412
+  - 120
+  - 68
+  WANDB:
+    GROUP: random
+    NAME: eval-
+    PROJECT: data-efficient-rl

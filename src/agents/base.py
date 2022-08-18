@@ -132,34 +132,27 @@ class RLBaseAgent(ABC):
         for callback in callbacks:
             callback.on_train_end()
 
-    def evaluate(self, frames, seeds, callbacks):
-        logs = {
-            'average_return': [],
-            'max_return': [],
-            'min_return': [],
-            'num_episodes': []
-        }
-        for seed in tqdm.tqdm(seeds):
-            episode_num, frame_n, episode_returns = 0, 0, []
+    def evaluate(self, frames, seed, callbacks):
 
-            #Setting the random seed
-            tf.keras.utils.set_random_seed(seed)
-            state = self.env.reset(seed=seed)
+        frame_n = 0
+        #Setting the random seed
+        tf.keras.utils.set_random_seed(seed)
+        state = self.env.reset(seed=seed)
 
-            # Running the evaluation for one seed
-            while frame_n < frames:
-                episode_return, frame_n = self.evaluation_episode(state, max_frames=frames, current_frame=frame_n)
-                episode_num += 1
-                episode_returns.append(episode_return)
-                state = self.env.reset()
+        # Running the evaluation for one seed
+        while frame_n < frames:
+            initial_frame_n = frame_n
+            episode_return, frame_n = self.evaluation_episode(state, max_frames=frames, current_frame=frame_n)
+            episode_num += 1
+            for callback in callbacks:
+                callback.on_eval_episode_end(logs= {
+                    'eval_episode_return': episode_return,
+                    'eval_episode_len': frame_n - initial_frame_n})
             
-            logs['average_return'].append(np.mean(episode_returns))
-            logs['max_return'].append(max(episode_returns))
-            logs['min_return'].append(min(episode_returns))
-            logs['num_episodes'].append(episode_num)
-        
+            state = self.env.reset()
+            
         for callback in callbacks:
-            callback.on_eval_end(logs)
+            callback.on_eval_end()
     
     def compile(self, environment, optimizer, loss):
         self.env = environment
