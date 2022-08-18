@@ -134,6 +134,8 @@ class RLBaseAgent(ABC):
 
     def evaluate(self, frames, seed, callbacks):
 
+        print(f'Evaluating for seed {seed}')
+
         frame_n = 0
         #Setting the random seed
         tf.keras.utils.set_random_seed(seed)
@@ -143,7 +145,6 @@ class RLBaseAgent(ABC):
         while frame_n < frames:
             initial_frame_n = frame_n
             episode_return, frame_n = self.evaluation_episode(state, max_frames=frames, current_frame=frame_n)
-            episode_num += 1
             for callback in callbacks:
                 callback.on_eval_episode_end(logs= {
                     'eval_episode_return': episode_return,

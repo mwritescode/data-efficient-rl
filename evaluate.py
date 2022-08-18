@@ -21,6 +21,7 @@ def run_evaluation(cfg):
         env = AtariPreprocessing(env_orig, terminal_on_life_loss=cfg.ENV.TERMINAL_ON_LIFE_LOSS)
         env = FrameStack(env, num_stack=4)
 
+        cfg['EVALUATION']['SEED'] = seed
         wandb_config = cfg.clone()
         del wandb_config['TRAINING']
 
@@ -29,7 +30,6 @@ def run_evaluation(cfg):
             keys_to_delete = [key for key in wandb_config['AGENT'] if key != 'PLAY_RANDOMLY']
             for key in keys_to_delete:
                 del wandb_config['AGENT'][key]
-            cfg['EVALUATION']['SEED'] = seed
         else:
             tf.keras.backend.set_image_data_format('channels_first')
             agent = DQNAgent(
@@ -101,7 +101,6 @@ if __name__ == '__main__':
             old_name = cfg.TRAINING.CHECKPOINT_PATH.split('/')[1]
             new_name = old_name + f'-{seed}'
             new_cfg['TRAINING']['SEED'] = seed
-            new_cfg['TRAINING']['CHECKPOINT_PATH'] = new_cfg['TRAINING']['CHECKPOINT_PATH'].replace(old_name, new_name)
-            new_cfg['EVALUATION']['CHECKPOINT_PATH'] = new_cfg['TRAINING']['CHECKPOINT_PATH'].replace(old_name, new_name)
+            new_cfg['EVALUATION']['CHECKPOINT_PATH'] = new_cfg['EVALUATION']['CHECKPOINT_PATH'].replace(old_name, new_name)
             new_cfg['EVALUATION']['WANDB']['NAME'] += str(seed)
             run_evaluation(new_cfg)
