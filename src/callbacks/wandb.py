@@ -92,6 +92,8 @@ class WandbEvaluationCallback(RLCallback):
             reinit=True,
             config=config
         )
+        wandb.define_metric("eval_episode_return", summary="mean")
+        wandb.define_metric("eval_episode_len", summary="mean")
     
     def on_eval_episode_end(self, logs=None):
         wandb.log(logs)
