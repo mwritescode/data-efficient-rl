@@ -6,7 +6,7 @@
 
 # DQN-Like Models from Pixels: Sample Efficiency Study
 
-<p align="center"> <img align="center" alt="GIF" src="assets/episode_demo.gif" width="40%"/> </p> <br>
+<p align="center"> <img align="center" alt="GIF" src="assets/episode_demo.gif?raw=true" width="40%"/> </p> <br>
 
 Deep RL algorithms trained directly on image pixels are notoriously not sample efficient, and this is true in particular for model-free agents like DQN and its more recent variations. Indeed, the original human-level results obtained on the Atari 2600 benchmark required 50 million training frames, which corresponds to about 38 days of game experience. More recent algorithms like Rainbow were trained for up to 200 million frames and the whole process took approximately 10 days. Requiring such an high number of interactions with the environment can have an unbearable cost in non-simulated environments - thus strongly limiting the application of RL models in real-world industrial and robotics applications.
 
