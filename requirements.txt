@@ -2,7 +2,8 @@ numpy
 pandas
 yacs
 wandb
-gym[atari]
+gym[atari]>=0.24.1
+gym[other]>=0.24.1
 autorom[accept-rom-license]
 pygame
 tensorflow-addons
